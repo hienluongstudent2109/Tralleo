@@ -1,0 +1,13 @@
+/.env
+/.env.*.local
+/src/vendor
+/src/node_modules
+/src/storage/*.key
+/src/public/storage
+/src/public/hot
+/src/storage/logs/*
+!/src/storage/logs/.gitignore
+/src/bootstrap/cache/*
+!/src/bootstrap/cache/.gitignore
+.DS_Store
+Thumbs.db
