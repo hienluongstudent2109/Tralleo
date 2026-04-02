@@ -33,7 +33,7 @@ return new class extends Migration
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
             $table->dateTime('due_date')->nullable();
         
-            $table->foreignId('created_by')->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
         
             $table->timestamps();
         
