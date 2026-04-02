@@ -1,58 +1,223 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tralleo
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ứng dụng Laravel 13 nằm trong thư mục `src` của repo; phía trên có thư mục gốc chứa Docker Compose và cấu hình container (nginx, PHP-FPM, MySQL, Redis).
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Cấu trúc repo (thư mục gốc)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+project-root/
+├── docker/
+│   ├── nginx/          # Dockerfile + cấu hình virtual host Laravel
+│   └── php/            # Dockerfile PHP-FPM + extension (MySQL, Redis, OPcache, …)
+├── docker-compose.yml
+├── .env                # Biến cho Docker Compose (cổng, DB, …)
+├── docs/               # Tài liệu bổ sung (ví dụ migration)
+└── src/                # Laravel (app này)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Trong thư mục `src` (Laravel):
 
-## Contributing
+```
+app/
+├── Http/
+│   ├── Controllers/Api/   # AuthController, WorkspaceController
+│   ├── Requests/Api/      # Form Request
+│   └── Resources/         # JSON Resource
+├── Models/
+├── Policies/              # WorkspacePolicy
+├── Repositories/          # WorkspaceRepository
+├── Services/              # AuthService, WorkspaceService
+└── Enums/                 # WorkspaceRole
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Yêu cầu
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **PHP** ≥ 8.3, **Composer** (chạy local hoặc trong container)
+- **Docker Desktop** (nếu chạy stack đầy đủ bằng Compose)
+- Hoặc chỉ SQLite/MySQL local để chạy `php artisan` và test
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Chạy bằng Docker (khuyến nghị)
+
+1. Tạo file `.env` ở **thư mục gốc** repo (cùng cấp `docker-compose.yml`) nếu chưa có. Ví dụ:
+
+   ```env
+   APP_PORT=80
+   APP_ENV=production
+   MYSQL_PORT=3306
+   DB_DATABASE=laravel
+   DB_USERNAME=laravel
+   DB_PASSWORD=secret
+   DB_ROOT_PASSWORD=rootsecret
+   ```
+
+2. Cấu hình **`src/.env`** (Laravel) trỏ tới service trong Compose:
+
+   - `DB_HOST=mysql`
+   - `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` khớp với biến Docker
+   - `REDIS_HOST=redis`
+   - `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` dùng `redis` nếu đã cấu hình như vậy
+
+3. Build và chạy:
+
+   ```bash
+   cd /path/to/Tralleo
+   docker compose build
+   docker compose up -d
+   ```
+
+4. Migration và tối ưu (trong container PHP):
+
+   ```bash
+   docker compose exec php php artisan migrate --force
+   docker compose exec php php artisan config:cache
+   docker compose exec php php artisan route:cache
+   docker compose exec php php artisan view:cache
+   ```
+
+5. Truy cập ứng dụng: `http://localhost` (hoặc cổng trong `APP_PORT`).
+
+---
+
+## Cài đặt local (không Docker)
+
+```bash
+cd src
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+```
+
+Chỉnh `DB_*` trong `.env` cho phù hợp (SQLite hoặc MySQL local).
+
+---
+
+## Database & migration
+
+Các bảng đã thiết kế (migrations trong `database/migrations/`):
+
+| Bảng | Mô tả ngắn |
+|------|------------|
+| `users` | Bảng mặc định Laravel + migration bổ sung `avatar`, `timezone` |
+| `sanctum` | `personal_access_tokens` (Laravel Sanctum) |
+| `workspaces` | Không gian làm việc; `owner_id` |
+| `workspace_users` | Thành viên + `role` (`owner` / `admin` / `member`) |
+| `projects`, `project_users`, `columns`, `tasks`, `task_assignees` | Nghiệp vụ board / task |
+| `comments`, `activity_logs`, `attachments` | Bình luận, log, file đính kèm |
+
+Hướng dẫn chi tiết migration và lệnh Artisan liên quan: **`../docs/HUONG_DAN_MIGRATION.md`** (từ thư mục gốc repo).
+
+Lệnh thường dùng:
+
+```bash
+cd src
+php artisan migrate
+php artisan migrate:fresh   # chỉ môi trường dev
+```
+
+---
+
+## Gói & cấu hình API
+
+- **Laravel Sanctum** — xác thực API bằng token (Bearer).
+
+Đã cài:
+
+```bash
+cd src
+composer require laravel/sanctum
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+php artisan migrate
+```
+
+Route API được đăng ký trong `bootstrap/app.php` (file `routes/api.php`), prefix **`/api`**.
+
+---
+
+## API REST (Auth + Workspace)
+
+Gửi header:
+
+- `Authorization: Bearer {token}`
+- `Accept: application/json`
+- `Content-Type: application/json` (khi có body)
+
+### Auth
+
+| Phương thức | Đường dẫn | Auth | Nội dung |
+|-------------|-----------|------|----------|
+| `POST` | `/api/register` | Không | `name`, `email`, `password`, `password_confirmation` |
+| `POST` | `/api/login` | Không | `email`, `password` → trả `token` + `user` |
+| `POST` | `/api/logout` | Sanctum | Thu hồi token hiện tại |
+| `GET` | `/api/user` | Sanctum | Thông tin user đăng nhập |
+
+### Workspace
+
+| Phương thức | Đường dẫn | Auth | Mô tả |
+|-------------|-----------|------|--------|
+| `GET` | `/api/workspaces` | Sanctum | Danh sách workspace mà user tham gia |
+| `POST` | `/api/workspaces` | Sanctum | Tạo workspace: body `name` |
+| `POST` | `/api/workspaces/{workspace}/members` | Sanctum | Thêm thành viên: `email`, `role` (`admin` hoặc `member`) |
+
+**Phân quyền:**
+
+- **`WorkspacePolicy`**: chỉ `owner` hoặc `admin` của workspace mới được gọi thêm thành viên.
+- Gán role **`admin`** cho user mới chỉ khi người gọi là **owner** (`owner_id` của workspace).
+
+### Ví dụ nhanh (curl)
+
+```bash
+# Đăng ký
+curl -s -X POST http://localhost/api/register \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"name":"Alice","email":"alice@example.com","password":"password","password_confirmation":"password"}'
+
+# Đăng nhập (lấy token trong JSON)
+curl -s -X POST http://localhost/api/login \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"email":"alice@example.com","password":"password"}'
+
+# Danh sách workspace (thay YOUR_TOKEN)
+curl -s http://localhost/api/workspaces \
+  -H "Authorization: Bearer YOUR_TOKEN" -H "Accept: application/json"
+```
+
+---
+
+## Kiến trúc xử lý nghiệp vụ
+
+- **Controller** (`Http/Controllers/Api/`) — nhận HTTP, gọi Service, trả Resource hoặc JSON.
+- **Service** (`Services/`) — luồng nghiệp vụ (đăng ký, đăng nhập, tạo workspace, thêm member).
+- **Repository** (`Repositories/`) — truy vấn/ghi DB (ví dụ `WorkspaceRepository`).
+- **Policy** (`Policies/`) — ủy quyền (`$this->authorize(...)` trong controller).
+- **Form Request** (`Http/Requests/Api/`) — validate input.
+- **Resource** (`Http/Resources/`) — định dạng JSON trả về.
+
+`Gate::policy(Workspace::class, WorkspacePolicy::class)` được đăng ký trong `App\Providers\AppServiceProvider`.
+
+---
+
+## Lệnh Artisan hữu ích
+
+```bash
+cd src
+
+php artisan route:list --path=api
+php artisan migrate
+php artisan migrate:fresh --force
+php artisan test
+php artisan config:clear
+php artisan optimize:clear
+```
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Framework Laravel dùng [MIT license](https://opensource.org/licenses/MIT). Mã nghiệp vụ dự án Tralleo theo quy định của repo.
