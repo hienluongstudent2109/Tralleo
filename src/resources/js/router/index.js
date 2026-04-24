@@ -10,6 +10,12 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: () => import('../pages/Dashboard.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
         path: '/login',
         name: 'Login',
         component: Login,
@@ -21,6 +27,11 @@ const routes = [
         component: () => import('../pages/Register.vue'),
         meta: { requiresAuth: false },
     },
+    {
+        path: '/workspace/:id',
+        component: () => import('../pages/WorkspaceDetail.vue'),
+        meta: { requiresAuth: true }
+    }
 ];
 
 const router = createRouter({
@@ -40,7 +51,7 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         next({ name: 'Login', query: { redirect: to.fullPath } });
     } else if (to.name === 'Login' && authStore.isAuthenticated) {
-        next({ name: 'Home' });
+        next({ name: 'Dashboard' });
     } else {
         next();
     }
