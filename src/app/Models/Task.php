@@ -25,4 +25,9 @@ class Task extends Model
     {
         return $this->belongsToMany(User::class, 'task_assignees');
     }
+
+    public function column()
+    {
+        return $this->belongsTo(Column::class);
+    }
 }

@@ -3,14 +3,14 @@ import { useAuthStore } from '../store/auth';
 import Login from '../pages/Login.vue';
 
 const routes = [
+    // {
+    //     path: '/',
+    //     name: 'Home',
+    //     component: () => import('../pages/Home.vue'),
+    //     meta: { requiresAuth: true },
+    // },
     {
         path: '/',
-        name: 'Home',
-        component: () => import('../pages/Home.vue'),
-        meta: { requiresAuth: true },
-    },
-    {
-        path: '/dashboard',
         name: 'Dashboard',
         component: () => import('../pages/Dashboard.vue'),
         meta: { requiresAuth: true },
@@ -30,6 +30,11 @@ const routes = [
     {
         path: '/workspace/:id',
         component: () => import('../pages/WorkspaceDetail.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/project/:id',
+        component: () => import('../pages/ProjectBoard.vue'),
         meta: { requiresAuth: true }
     }
 ];

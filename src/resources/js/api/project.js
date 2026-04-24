@@ -5,5 +5,6 @@ export const getProjects = (workspaceId) => {
 }
 
 export const createProject = (data) => {
+    conosle.log('Creating project with data:', data)
   return axios.post('/projects', data)
 }
