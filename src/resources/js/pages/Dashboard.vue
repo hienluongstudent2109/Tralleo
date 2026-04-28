@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
+    <AppNavbar />
 
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
@@ -26,7 +27,7 @@
     <!-- Workspace list -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div
-        v-for="ws in store.workspaces"
+        v-for="ws in store.workspaces.data"
         :key="ws.id"
         @click="goToWorkspace(ws.id)"
         class="bg-white p-4 rounded-xl shadow cursor-pointer hover:shadow-lg transition"
@@ -70,6 +71,7 @@
 import { ref, onMounted } from 'vue'
 import { useWorkspaceStore } from '../store/workspace'
 import { useRouter } from 'vue-router'
+import AppNavbar from '../components/AppNavbar.vue'
 
 const store = useWorkspaceStore()
 const router = useRouter()

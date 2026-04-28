@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
+    <AppNavbar />
 
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
@@ -113,6 +114,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProjectStore } from '../store/project'
 import { addMember } from '../api/workspace'
+import AppNavbar from '../components/AppNavbar.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -35,6 +35,7 @@ class AuthController extends Controller
         $data = $this->auth->login(
             $request->validated('email'),
             $request->validated('password'),
+            $request->validated('remember')
         );
 
         return response()->json([

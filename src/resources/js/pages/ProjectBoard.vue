@@ -1,5 +1,6 @@
 <template>
   <div class="p-6 bg-gray-100 min-h-screen">
+    <AppNavbar />
 
     <!-- Header -->
     <div class="flex justify-between mb-6">
@@ -73,6 +74,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBoardStore } from '../store/board'
+import AppNavbar from '../components/AppNavbar.vue'
 
 const route = useRoute()
 const projectId = route.params.id

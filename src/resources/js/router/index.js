@@ -3,14 +3,14 @@ import { useAuthStore } from '../store/auth';
 import Login from '../pages/Login.vue';
 
 const routes = [
-    // {
-    //     path: '/',
-    //     name: 'Home',
-    //     component: () => import('../pages/Home.vue'),
-    //     meta: { requiresAuth: true },
-    // },
     {
         path: '/',
+        name: 'Home',
+        component: () => import('../pages/Home.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/dashboard',
         name: 'Dashboard',
         component: () => import('../pages/Dashboard.vue'),
         meta: { requiresAuth: true },
@@ -56,7 +56,7 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         next({ name: 'Login', query: { redirect: to.fullPath } });
     } else if (to.name === 'Login' && authStore.isAuthenticated) {
-        next({ name: 'Dashboard' });
+        next({ name: 'Home' });
     } else {
         next();
     }

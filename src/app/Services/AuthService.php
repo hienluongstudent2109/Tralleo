@@ -27,7 +27,7 @@ class AuthService
     /**
      * @return array{user: User, token: string}
      */
-    public function login(string $email, string $password): array
+    public function login(string $email, string $password, bool $remember = false): array
     {
         $user = User::query()->where('email', $email)->first();
 
@@ -37,7 +37,7 @@ class AuthService
             ]);
         }
 
-        $token = $user->createToken('api')->plainTextToken;
+        $token = $user->createToken('api', ['*'], $remember ? now()->addMonths(1) : null)->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
     }
